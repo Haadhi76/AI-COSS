@@ -1,0 +1,13 @@
+source_of_truth\Messages JSON.json
+source_of_truth\Developer Assessment AoS Brief.pdf
+
+frontend\node_modules
+frontend\dist
+frontend\.env
+frontend\.env.local
+frontend\.DS_Store
+frontend\*.log
+
+CLAUDE.md
+frontend\CLAUDE_frontend.md
+
