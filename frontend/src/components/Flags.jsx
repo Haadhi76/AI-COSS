@@ -60,10 +60,10 @@ export default function Flags({ items, loading, onSelect }) {
                 <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                   <span
                     className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
-                      severityTone[m.severity] ?? severityTone.Critical
+                      severityTone[m.flag_severity] ?? severityTone.Critical
                     }`}
                   >
-                    {m.severity ?? 'Critical'}
+                    {m.flag_severity ?? 'Critical'}
                   </span>
                   <span className="text-[11px] text-slate-500 flex items-center gap-1">
                     <Icon size={11} />
@@ -74,7 +74,7 @@ export default function Flags({ items, loading, onSelect }) {
                   </span>
                 </div>
                 <p className="font-semibold text-slate-900 text-sm leading-snug">
-                  {m.summary}
+                  {m.reasoning}
                 </p>
                 {m.subject && (
                   <p className="text-xs text-slate-500 mt-1.5 truncate">{m.subject}</p>

@@ -92,7 +92,7 @@ export default function MessageCard({ message, selected, onClick }) {
       </div>
 
       <p className="text-sm text-slate-600 leading-relaxed line-clamp-2">
-        {message.summary ?? message.body}
+        {message.reasoning ?? message.body}
       </p>
 
       <div className="flex items-center justify-between pt-3 border-t border-slate-100">
@@ -105,7 +105,7 @@ export default function MessageCard({ message, selected, onClick }) {
         {message.flagged && (
           <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-red-600">
             <AlertTriangle size={12} />
-            {message.severity ?? 'Critical'}
+            {message.flag_severity ?? 'Critical'}
           </span>
         )}
       </div>

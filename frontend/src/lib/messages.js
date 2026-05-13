@@ -168,8 +168,8 @@ export const messages = [
   },
 ];
 
-// Mocked Claude triage output. Mirrors the schema the real Claude call will
-// return (id, category, reasoning, draft, urgency, flagged, summary, severity).
+// Mocked Claude triage output. Mirrors the schema the backend returns:
+// (id, category, reasoning, draft, urgency, flagged, flag_severity).
 // Replace with the live response from src/lib/claude.js in the next pass.
 export const mockTriage = [
   {
@@ -177,8 +177,7 @@ export const mockTriage = [
     category: 'Decide',
     urgency: 5,
     flagged: true,
-    severity: 'Critical',
-    summary: 'Live checkout failing for 3% of users — needs hotfix vs rollback call within the hour.',
+    flag_severity: 'Critical',
     reasoning:
       'Production incident impacting revenue. Tom needs a directional call (hotfix vs rollback) inside an hour. Rollback costs ~2 weeks of migration progress; hotfix is faster but carries deployment risk. This is the single highest-priority item in the inbox.',
     draft:
@@ -189,8 +188,7 @@ export const mockTriage = [
     category: 'Decide',
     urgency: 5,
     flagged: true,
-    severity: 'Critical',
-    summary: 'Phishing attempt impersonating account security — do not click; report and forward to IT.',
+    flag_severity: 'Critical',
     reasoning:
       "Classic phishing pattern: spoofed sender domain ('seczure-verify.com'), fake urgency, suspicious link, threat of account suspension. Not a legitimate security alert. Should be reported, not actioned.",
     draft:
@@ -201,7 +199,7 @@ export const mockTriage = [
     category: 'Decide',
     urgency: 4,
     flagged: false,
-    summary: 'Northwind wants 1yr instead of 2yr — ARR drops from 120k to 60k. Need EOD answer.',
+    flag_severity: null,
     reasoning:
       'Material commercial decision. Halving the contract term meaningfully changes the deal economics and forecast. Pushing back risks losing the logo entirely; accepting sets a precedent for future renewals.',
     draft:
@@ -212,7 +210,7 @@ export const mockTriage = [
     category: 'Decide',
     urgency: 4,
     flagged: false,
-    summary: "Meridian's Sarah wants Thursday lock-in + revenue projections by Wednesday.",
+    flag_severity: null,
     reasoning:
       'Series B due diligence is on the critical path. Sarah has now sent two messages (#1 email, #18 WhatsApp) about Thursday timing and projections, and her partners meeting is the following Monday — missing this window costs us a cycle.',
     draft:
@@ -223,7 +221,7 @@ export const mockTriage = [
     category: 'Decide',
     urgency: 4,
     flagged: false,
-    summary: 'Sarah Chen offering 10am Thursday alternative — needs confirmation. Same thread as #1.',
+    flag_severity: null,
     reasoning:
       "WhatsApp follow-up to message #1. She's flagging her Monday partners meeting as the hard deadline for the projections. Treat as the same decision as #1.",
     draft: "Confirmed — 10am Thursday. Projections by EOD Wednesday. I'll send a calendar invite shortly.",
@@ -233,7 +231,7 @@ export const mockTriage = [
     category: 'Decide',
     urgency: 3,
     flagged: false,
-    summary: 'James reversed earlier ask — board deck stays Thursday. Needs confirmation on 2pm investor slot.',
+    flag_severity: null,
     reasoning:
       'James (#10) supersedes his own earlier message (#3). He needs the 2pm Thursday slot confirmed for the Meridian call — but note that conflicts with Sarah moving to 10am (#18) and the leadership sync moving to 3pm (#20). Resolve the calendar.',
     draft:
@@ -244,7 +242,7 @@ export const mockTriage = [
     category: 'Delegate',
     urgency: 4,
     flagged: false,
-    summary: 'Alex: hybrid-policy grumbling + benefits sign-off needed by Friday.',
+    flag_severity: null,
     reasoning:
       'Two unrelated items bundled. (a) Hybrid pushback is a people-management issue — Alex should run discovery and come back with a proposal. (b) Benefits sign-off has a hard external deadline (provider needs confirmation before 21 March or we lose the rate).',
     draft:
@@ -255,7 +253,7 @@ export const mockTriage = [
     category: 'Delegate',
     urgency: 3,
     flagged: false,
-    summary: 'VP Eng shortlist ready — Rachel recommends Candidates A (Stripe) and C (Datadog).',
+    flag_severity: null,
     reasoning:
       'Standard hiring funnel step. The screening can be delegated to James (COO) for the initial culture/operator screen before CEO time is invested.',
     draft:
@@ -266,7 +264,7 @@ export const mockTriage = [
     category: 'Delegate',
     urgency: 3,
     flagged: false,
-    summary: 'Priya closed Northwind — but see #19, terms are now in flux.',
+    flag_severity: null,
     reasoning:
       'Originally a win to acknowledge and delegate integration planning. Now coupled to #19 (term renegotiation) — hold celebration until commercial terms settle.',
     draft:
@@ -277,7 +275,7 @@ export const mockTriage = [
     category: 'Ignore',
     urgency: 2,
     flagged: false,
-    summary: 'Superseded by #10 — James no longer wants to push the board deck.',
+    flag_severity: null,
     reasoning: 'James reversed this request in message #10. No action needed.',
     draft: 'No response needed — superseded.',
   },
@@ -286,7 +284,7 @@ export const mockTriage = [
     category: 'Ignore',
     urgency: 2,
     flagged: false,
-    summary: 'Horizon timeline now aligned with David and Lisa — phased 6/10-week delivery.',
+    flag_severity: null,
     reasoning:
       "David's earlier concern (#6) is resolved internally. He explicitly says no action needed. Worth a one-line ack.",
     draft: "Good — thanks for handling it. Keep me posted on the client's reaction to the phased framing.",
@@ -296,7 +294,7 @@ export const mockTriage = [
     category: 'Ignore',
     urgency: 2,
     flagged: false,
-    summary: 'Resolved by #17 — Horizon timeline issue handled by David + Lisa.',
+    flag_severity: null,
     reasoning: "Superseded by message #17. Don't act on the original concern.",
     draft: 'No response needed — handled in follow-up #17.',
   },
@@ -305,7 +303,7 @@ export const mockTriage = [
     category: 'Ignore',
     urgency: 2,
     flagged: false,
-    summary: 'Leadership sync moved to 3pm Thursday — calendar already updated.',
+    flag_severity: null,
     reasoning: 'Pure logistics. Calendar invite updated automatically.',
     draft: 'No response needed.',
   },
@@ -314,7 +312,7 @@ export const mockTriage = [
     category: 'Ignore',
     urgency: 1,
     flagged: false,
-    summary: 'Leadership sync confirmed — superseded by #20 (3pm move).',
+    flag_severity: null,
     reasoning: 'Confirmation of meeting now moved per #20.',
     draft: 'No response needed.',
   },
@@ -323,7 +321,7 @@ export const mockTriage = [
     category: 'Ignore',
     urgency: 2,
     flagged: false,
-    summary: 'API migration dependency update — superseded by the critical incident in #16.',
+    flag_severity: null,
     reasoning: 'Same thread as #16, which is the load-bearing message.',
     draft: 'No response needed — see #16.',
   },
@@ -332,7 +330,7 @@ export const mockTriage = [
     category: 'Ignore',
     urgency: 1,
     flagged: false,
-    summary: 'API migration on track at 60% — no decision needed.',
+    flag_severity: null,
     reasoning: 'FYI update from engineering. Status info only.',
     draft: 'No response needed.',
   },
@@ -341,7 +339,7 @@ export const mockTriage = [
     category: 'Ignore',
     urgency: 1,
     flagged: false,
-    summary: 'Horizon demo went well — but see #6/#17 for the real timeline picture.',
+    flag_severity: null,
     reasoning: 'Optimistic FYI. The fuller picture is in David and Lisa\'s follow-up thread.',
     draft: 'No response needed.',
   },
@@ -350,7 +348,7 @@ export const mockTriage = [
     category: 'Ignore',
     urgency: 1,
     flagged: false,
-    summary: 'Mark explicitly says no decision needed on Q2 marketing.',
+    flag_severity: null,
     reasoning: 'Sender explicitly flagged this as FYI. Respect that signal.',
     draft: 'No response needed.',
   },
@@ -359,7 +357,7 @@ export const mockTriage = [
     category: 'Ignore',
     urgency: 1,
     flagged: false,
-    summary: 'Personal — dinner Sunday + wine request from sister.',
+    flag_severity: null,
     reasoning: 'Personal message. Surface but do not draft a work response.',
     draft: 'Personal — handle directly.',
   },
@@ -368,76 +366,86 @@ export const mockTriage = [
     category: 'Ignore',
     urgency: 1,
     flagged: false,
-    summary: 'Tech Digest newsletter — no action.',
+    flag_severity: null,
     reasoning: 'Marketing newsletter. Filterable noise.',
     draft: 'No response needed.',
   },
 ];
 
-// Briefing snapshot — same schema as the live Claude briefing endpoint.
+// Briefing snapshot — matches the backend response shape:
+// { sections: [{ title, items: [{ message_id, summary, action }] }], generated_at }
 export const mockBriefing = {
-  greeting: 'Good morning, CEO.',
-  headline:
-    "20 messages, 11 filtered as noise. Two critical items need you in the next hour: a checkout outage and a phishing attempt. Meridian's Series B is the strategic anchor for the day.",
-  decisions: [
+  sections: [
     {
-      id: 16,
-      title: 'Payment service incident — call hotfix vs rollback',
-      detail: '3% of checkouts failing. Tom needs a decision within the hour.',
-      severity: 'Critical',
+      title: 'Top Decisions Needed',
+      items: [
+        {
+          message_id: 16,
+          summary: 'Payment service incident — call hotfix vs rollback',
+          action: '3% of checkouts failing. Tom needs a decision within the hour.',
+        },
+        {
+          message_id: 19,
+          summary: 'Northwind term change — accept 1yr at 60k or push back?',
+          action: 'Halves ARR. EOD response expected.',
+        },
+        {
+          message_id: 1,
+          summary: 'Meridian Series B — Thursday lock-in + revenue projections',
+          action: 'Sarah offered 10am alternative (#18). Partners meeting is the following Monday.',
+        },
+      ],
     },
     {
-      id: 19,
-      title: 'Northwind term change — accept 1yr at 60k or push back?',
-      detail: 'Halves ARR. EOD response expected.',
-      severity: 'High',
+      title: 'Delegated Actions',
+      items: [
+        {
+          message_id: 13,
+          summary: 'Hybrid policy pushback → Alex',
+          action: 'Discovery 1:1s with 4-5 engineers, proposal back Monday.',
+        },
+        {
+          message_id: 13,
+          summary: 'Benefits package sign-off',
+          action: 'Hard deadline before 21 March to keep the rate. Review by Thursday EOD.',
+        },
+        {
+          message_id: 8,
+          summary: 'VP Eng intro screens → James',
+          action: 'Candidates A and C first; James does culture pass before CEO time.',
+        },
+      ],
     },
     {
-      id: 1,
-      title: 'Meridian Series B — Thursday lock-in + revenue projections',
-      detail: 'Sarah offered 10am alternative (#18). Partners meeting is the following Monday.',
-      severity: 'High',
+      title: 'Watch Items',
+      items: [
+        {
+          message_id: 17,
+          summary: 'Horizon client reframing to phased 6/10-week delivery',
+          action: "David & Lisa aligned internally. Watch for client's reaction at next touchpoint.",
+        },
+        {
+          message_id: 10,
+          summary: 'Thursday calendar collisions',
+          action: 'Meridian moving to 10am, leadership sync to 3pm. Board deck prep clear at 2pm.',
+        },
+      ],
+    },
+    {
+      title: 'Quick Wins',
+      items: [
+        {
+          message_id: 12,
+          summary: 'Acknowledge Priya — Northwind close',
+          action: 'Recognise the win even while the term issue resolves.',
+        },
+        {
+          message_id: 17,
+          summary: 'One-line thanks to David',
+          action: 'He handled the Horizon timeline concern without escalation.',
+        },
+      ],
     },
   ],
-  delegated: [
-    {
-      id: 13,
-      title: 'Hybrid policy pushback → Alex',
-      detail: 'Discovery 1:1s with 4-5 engineers, proposal back Monday.',
-    },
-    {
-      id: 13,
-      title: 'Benefits package sign-off',
-      detail: 'Hard deadline before 21 March to keep the rate. Review by Thursday EOD.',
-    },
-    {
-      id: 8,
-      title: 'VP Eng intro screens → James',
-      detail: 'Candidates A and C first; James does culture pass before CEO time.',
-    },
-  ],
-  watch: [
-    {
-      id: 17,
-      title: 'Horizon client reframing to phased 6/10-week delivery',
-      detail: "David & Lisa aligned internally. Watch for client's reaction at next touchpoint.",
-    },
-    {
-      id: 10,
-      title: 'Thursday calendar collisions',
-      detail: 'Meridian moving to 10am, leadership sync to 3pm. Board deck prep clear at 2pm.',
-    },
-  ],
-  quickWins: [
-    {
-      id: 12,
-      title: 'Acknowledge Priya — Northwind close',
-      detail: 'Recognise the win even while the term issue resolves.',
-    },
-    {
-      id: 17,
-      title: 'One-line thanks to David',
-      detail: 'He handled the Horizon timeline concern without escalation.',
-    },
-  ],
+  generated_at: '2026-03-18T13:02:00Z',
 };

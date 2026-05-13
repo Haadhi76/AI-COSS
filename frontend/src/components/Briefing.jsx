@@ -9,11 +9,27 @@ import {
 } from 'lucide-react';
 import { BriefingSkeleton } from './SkeletonLoader.jsx';
 
-const severityTone = {
-  Critical: 'bg-red-600 text-white',
-  High: 'bg-amber-500 text-white',
-  Medium: 'bg-slate-500 text-white',
+const SECTION_TITLES = {
+  decisions: 'Top Decisions Needed',
+  delegated: 'Delegated Actions',
+  watch: 'Watch Items',
+  quickWins: 'Quick Wins',
 };
+
+function itemsByTitle(briefing, title) {
+  const section = briefing.sections?.find(s => s.title === title);
+  return section?.items ?? [];
+}
+
+function formatGeneratedAt(ts) {
+  if (!ts) return '';
+  try {
+    const d = new Date(ts);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '';
+  }
+}
 
 function Section({ icon: Icon, title, accent, count, children }) {
   return (
@@ -32,27 +48,16 @@ function Section({ icon: Icon, title, accent, count, children }) {
   );
 }
 
-function Row({ item, onOpen, badge }) {
+function Row({ item, onOpen }) {
   return (
     <li>
       <button
-        onClick={() => onOpen(item.id)}
+        onClick={() => onOpen(item.message_id)}
         className="group w-full cursor-pointer text-left flex items-start gap-3 px-6 py-3.5 hover:bg-slate-50 transition-colors duration-200"
       >
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            {badge && (
-              <span
-                className={`text-[10px] font-black uppercase px-1.5 py-0.5 rounded ${
-                  severityTone[badge] ?? severityTone.Medium
-                }`}
-              >
-                {badge}
-              </span>
-            )}
-            <p className="font-semibold text-slate-900 text-sm">{item.title}</p>
-          </div>
-          <p className="text-xs text-slate-500 mt-1 leading-relaxed">{item.detail}</p>
+          <p className="font-semibold text-slate-900 text-sm">{item.summary}</p>
+          <p className="text-xs text-slate-500 mt-1 leading-relaxed">{item.action}</p>
         </div>
         <ArrowUpRight
           size={16}
@@ -65,6 +70,12 @@ function Row({ item, onOpen, badge }) {
 
 export default function Briefing({ briefing, loading, onJumpToTriage, onOpenMessage }) {
   if (loading || !briefing) return <BriefingSkeleton />;
+
+  const decisions = itemsByTitle(briefing, SECTION_TITLES.decisions);
+  const delegated = itemsByTitle(briefing, SECTION_TITLES.delegated);
+  const watch = itemsByTitle(briefing, SECTION_TITLES.watch);
+  const quickWins = itemsByTitle(briefing, SECTION_TITLES.quickWins);
+  const stamp = formatGeneratedAt(briefing.generated_at);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -80,14 +91,17 @@ export default function Briefing({ briefing, loading, onJumpToTriage, onOpenMess
               <Coffee size={18} />
             </span>
             <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
-              AI Briefing · 13:02
+              AI Briefing{stamp ? ` · ${stamp}` : ''}
             </span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mb-3">
-            {briefing.greeting}
+            Good morning, CEO.
           </h2>
           <p className="text-slate-600 text-[15px] leading-relaxed max-w-3xl">
-            {briefing.headline}
+            {decisions.length} decision{decisions.length === 1 ? '' : 's'} need you today,
+            {' '}{delegated.length} already routed to direct reports,
+            {' '}{watch.length} to watch, and {quickWins.length} quick win
+            {quickWins.length === 1 ? '' : 's'}.
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             <button
@@ -108,22 +122,22 @@ export default function Briefing({ briefing, loading, onJumpToTriage, onOpenMess
       {/* Four sections */}
       <Section
         icon={AlertTriangle}
-        title="Top Decisions Needed"
+        title={SECTION_TITLES.decisions}
         accent="bg-amber-50 text-amber-700"
-        count={briefing.decisions.length}
+        count={decisions.length}
       >
-        {briefing.decisions.map((item, i) => (
-          <Row key={`d-${i}`} item={item} onOpen={onOpenMessage} badge={item.severity} />
+        {decisions.map((item, i) => (
+          <Row key={`d-${i}`} item={item} onOpen={onOpenMessage} />
         ))}
       </Section>
 
       <Section
         icon={UserCheck}
-        title="Delegated Actions"
+        title={SECTION_TITLES.delegated}
         accent="bg-sky-50 text-sky-700"
-        count={briefing.delegated.length}
+        count={delegated.length}
       >
-        {briefing.delegated.map((item, i) => (
+        {delegated.map((item, i) => (
           <Row key={`g-${i}`} item={item} onOpen={onOpenMessage} />
         ))}
       </Section>
@@ -131,22 +145,22 @@ export default function Briefing({ briefing, loading, onJumpToTriage, onOpenMess
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Section
           icon={Eye}
-          title="Watch Items"
+          title={SECTION_TITLES.watch}
           accent="bg-slate-100 text-slate-700"
-          count={briefing.watch.length}
+          count={watch.length}
         >
-          {briefing.watch.map((item, i) => (
+          {watch.map((item, i) => (
             <Row key={`w-${i}`} item={item} onOpen={onOpenMessage} />
           ))}
         </Section>
 
         <Section
           icon={Sparkles}
-          title="Quick Wins"
+          title={SECTION_TITLES.quickWins}
           accent="bg-emerald-50 text-emerald-700"
-          count={briefing.quickWins.length}
+          count={quickWins.length}
         >
-          {briefing.quickWins.map((item, i) => (
+          {quickWins.map((item, i) => (
             <Row key={`q-${i}`} item={item} onOpen={onOpenMessage} />
           ))}
         </Section>

@@ -9,14 +9,16 @@ shell with mocked AI output; live Claude calls land in the next pass.
 - Vite + React 18
 - Tailwind CSS (Inter font)
 - Lucide icons
-- Claude Sonnet API (`claude-sonnet-4-20250514`) — wrapper in `src/lib/claude.js`
+- FastAPI backend proxy at `VITE_API_BASE_URL` (default `http://localhost:8000`) —
+  thin client in `src/lib/claude.js`. The Anthropic key lives in `backend/.env`
+  and never reaches the browser bundle.
 
 ## Setup
 
 ```powershell
 cd frontend
 npm install
-copy .env.example .env       # then paste your VITE_ANTHROPIC_API_KEY
+copy .env.example .env       # VITE_API_BASE_URL defaults to http://localhost:8000
 npm run dev
 ```
 
@@ -47,9 +49,10 @@ src/
 
 - `App.jsx` reads `mockTriage` and `mockBriefing` from `lib/messages.js` after a
   short artificial delay so skeletons get exercised.
-- `lib/claude.js` already has the production-shaped `triageMessages()` and
-  `generateBriefing()` calls. To go live: swap the `useEffect` in `App.jsx` to
-  call them, keep the loading state, and surface errors in a toast.
+- `lib/claude.js` is a thin client that POSTs to the FastAPI backend
+  (`/api/triage`, `/api/briefing`, `/api/flags`). To go live: swap the
+  `useEffect` in `App.jsx` to call `triageMessages()` / `generateBriefing()`,
+  keep the loading state, and surface errors in a toast.
 
 ## Design tokens
 

@@ -99,7 +99,7 @@ export default function MessageFlyout({ message, onClose }) {
               {message.flagged && (
                 <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded bg-red-600 text-white flex items-center gap-1">
                   <AlertTriangle size={10} />
-                  {message.severity ?? 'Critical'}
+                  {message.flag_severity ?? 'Critical'}
                 </span>
               )}
               <span className="text-[10px] text-slate-400 ml-auto">ID #{message.id}</span>
