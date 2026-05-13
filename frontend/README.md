@@ -45,14 +45,17 @@ src/
     claude.js             real Claude API wrapper (used next pass)
 ```
 
-## What's mocked vs live
+## Data flow
 
-- `App.jsx` reads `mockTriage` and `mockBriefing` from `lib/messages.js` after a
-  short artificial delay so skeletons get exercised.
+- `App.jsx` calls `triageMessages(messages)` on mount, then
+  `generateBriefing(messages, triage)` once the triage resolves. Skeletons
+  render until both finish; an inline error banner with a Retry button
+  surfaces if either call fails.
 - `lib/claude.js` is a thin client that POSTs to the FastAPI backend
-  (`/api/triage`, `/api/briefing`, `/api/flags`). To go live: swap the
-  `useEffect` in `App.jsx` to call `triageMessages()` / `generateBriefing()`,
-  keep the loading state, and surface errors in a toast.
+  (`/api/triage`, `/api/briefing`, `/api/flags`). The Anthropic key lives in
+  `backend/.env` and never reaches the bundle.
+- `mockTriage` / `mockBriefing` in `lib/messages.js` are kept as
+  shape-correct reference data; they're no longer wired into `App.jsx`.
 
 ## Design tokens
 

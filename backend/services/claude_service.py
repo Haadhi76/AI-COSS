@@ -14,9 +14,9 @@ from models.schemas import (
     TriageItem,
 )
 
-MODEL = "claude-sonnet-4-20250514"
-TRIAGE_MAX_TOKENS = 2000
-BRIEFING_MAX_TOKENS = 1500
+MODEL = "claude-sonnet-4-6"
+TRIAGE_MAX_TOKENS = 8000
+BRIEFING_MAX_TOKENS = 4000
 
 _FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```\s*$", re.IGNORECASE)
 

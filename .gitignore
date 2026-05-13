@@ -13,12 +13,17 @@ DELIVERABLES.md
 
 # Backend / Python
 backend/.env
+backend/data/
 __pycache__/
 *.py[cod]
 *$py.class
 .venv/
 venv/
 env/
+
+# Test artifacts
+.pytest_cache/
+*.db
 
 # System and Editor
 .DS_Store

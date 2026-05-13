@@ -68,7 +68,13 @@ function Row({ item, onOpen }) {
   );
 }
 
-export default function Briefing({ briefing, loading, onJumpToTriage, onOpenMessage }) {
+export default function Briefing({
+  briefing,
+  loading,
+  onJumpToTriage,
+  onOpenMessage,
+  noiseCount = 0,
+}) {
   if (loading || !briefing) return <BriefingSkeleton />;
 
   const decisions = itemsByTitle(briefing, SECTION_TITLES.decisions);
@@ -113,7 +119,7 @@ export default function Briefing({ briefing, loading, onJumpToTriage, onOpenMess
             </button>
             <span className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 text-sm font-semibold rounded-xl">
               <Sparkles size={14} className="text-brand-500" />
-              Filtered 11 noise items
+              Filtered {noiseCount} noise item{noiseCount === 1 ? '' : 's'}
             </span>
           </div>
         </div>

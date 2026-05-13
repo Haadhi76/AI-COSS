@@ -92,7 +92,7 @@ Response:
 
 ## Claude rules
 
-- Model: `claude-sonnet-4-20250514`
+- Model: `claude-sonnet-4-6`
 - `max_tokens`: 2000 for triage, 1500 for briefing
 - System prompts end with the JSON-only instruction
 - Any accidental fences are stripped before `json.loads`
