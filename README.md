@@ -1,6 +1,10 @@
 # INNATEAI — AI Chief of Staff
 
+[![License: Source Available](https://img.shields.io/badge/license-Source%20Available%20NC-blue)](LICENSE)
+
 A full-stack AI assistant that triages messages, surfaces critical flags, and generates structured daily briefings using Claude. The Anthropic API key stays server-side — it never reaches the browser.
+
+> Source code is publicly visible for educational and personal use only. Commercial use is prohibited — see [LICENSE](LICENSE) and [TERMS](TERMS.md) for details.
 
 ## Core Capabilities
 
