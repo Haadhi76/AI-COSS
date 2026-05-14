@@ -21,6 +21,9 @@ def test_triage_prompt_includes_memory(client, mock_claude, tmp_path, monkeypatc
 
 
 def test_triage_prompt_asks_for_department(client, mock_claude):
+    from services import memory_service
+    memory_service._cache = None
+
     mock_claude.respond_with(triage_response_json())
     client.post("/api/triage", json={"messages": SAMPLE_MESSAGES})
 
