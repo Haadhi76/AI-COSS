@@ -67,3 +67,7 @@ class FlagItem(BaseModel):
 
 class FlagsResponse(BaseModel):
     flags: List[FlagItem]
+
+
+class DaySummary(BaseModel):
+    bullets: List[str]

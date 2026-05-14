@@ -183,3 +183,46 @@ def run_briefing(messages: List[Message], triage: List[TriageItem]) -> BriefingR
         sections=sections,
         generated_at=datetime.now(timezone.utc),
     )
+
+
+DAY_SUMMARY_MAX_TOKENS = 600
+
+DAY_SUMMARY_SYSTEM = """You are an AI Chief of Staff writing the end-of-day wrap for a CEO whose entire briefing has been cleared.
+
+Produce 3-5 short bullet points covering:
+- Key accomplishments today (one bullet per major decision/delegation closed)
+- Any pending Watch Items still worth monitoring tomorrow
+- Reminders or follow-ups for tomorrow
+
+Each bullet should be one sentence, plain prose, no markdown bullets in the strings themselves.
+
+Return a JSON object matching this schema exactly:
+{ "bullets": [string, ...] }
+
+Return ONLY valid JSON. No markdown, no prose, no backticks."""
+
+
+def run_day_summary(payload: dict) -> "DaySummary":
+    from models.schemas import DaySummary
+
+    user = (
+        f"Today's sections:\n{json.dumps(payload.get('sections', []), indent=2)}\n\n"
+        f"Completed message ids: {payload.get('completed_ids', [])}\n\n"
+        f"Triage:\n{json.dumps(payload.get('triage', []), indent=2)}"
+    )
+    raw = _call_claude(DAY_SUMMARY_SYSTEM, user, DAY_SUMMARY_MAX_TOKENS)
+    parsed = _parse_json_or_502(raw)
+
+    if not isinstance(parsed, dict) or "bullets" not in parsed:
+        raise HTTPException(
+            status_code=502,
+            detail={"error": "Claude returned malformed JSON", "raw": raw[:2000]},
+        )
+
+    try:
+        return DaySummary.model_validate(parsed)
+    except Exception as e:
+        raise HTTPException(
+            status_code=502,
+            detail={"error": "Claude returned malformed JSON", "raw": raw[:2000], "validation": str(e)},
+        )
