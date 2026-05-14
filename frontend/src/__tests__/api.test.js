@@ -16,8 +16,22 @@ describe('api.getTodayBriefing', () => {
 
     const call = global.fetch.mock.calls[0];
     expect(call[0]).toContain('/api/briefing/today');
+    expect(call[0]).not.toContain('force=true');
     expect(call[1].method).toBe('POST');
     expect(JSON.parse(call[1].body)).toEqual({ messages: [{ id: 1 }] });
     expect(result.id).toBe(1);
+  });
+
+  it('appends ?force=true when force option is set', async () => {
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ id: 1 }),
+    });
+
+    const { getTodayBriefing } = await import('../lib/api.js');
+    await getTodayBriefing([{ id: 1 }], { force: true });
+
+    const url = global.fetch.mock.calls[0][0];
+    expect(url).toContain('/api/briefing/today?force=true');
   });
 });

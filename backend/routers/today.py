@@ -24,11 +24,12 @@ def _checkable_ids(payload: dict) -> set[int]:
 
 
 @router.post("/api/briefing/today", response_model=TodayBriefingResponse)
-def post_today(request: TodayBriefingRequest) -> TodayBriefingResponse:
+def post_today(request: TodayBriefingRequest, force: bool = False) -> TodayBriefingResponse:
     today = utc_today_str()
-    existing = get_today(today)
-    if existing:
-        return TodayBriefingResponse.model_validate(existing)
+    if not force:
+        existing = get_today(today)
+        if existing:
+            return TodayBriefingResponse.model_validate(existing)
 
     triage_items = run_triage(request.messages)
     briefing = run_briefing(request.messages, triage_items)

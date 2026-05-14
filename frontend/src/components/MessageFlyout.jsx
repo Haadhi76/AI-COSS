@@ -30,7 +30,7 @@ const categoryTone = {
   Ignore: 'bg-slate-100 text-slate-500 border-slate-200',
 };
 
-export default function MessageFlyout({ message, onClose, onOverride = () => {} }) {
+export default function MessageFlyout({ message, onClose, onOverride = () => {}, onApprove = () => {} }) {
   const [draft, setDraft] = useState('');
   const [sent, setSent] = useState(false);
 
@@ -54,6 +54,7 @@ export default function MessageFlyout({ message, onClose, onOverride = () => {} 
   const fromAddress = message.from.match(/<([^>]+)>/)?.[1] ?? message.channel_name ?? '';
 
   const handleApprove = () => {
+    onApprove(message.id);
     setSent(true);
     setTimeout(onClose, 900);
   };

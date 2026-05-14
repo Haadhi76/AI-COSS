@@ -104,4 +104,23 @@ describe('Briefing todo behaviour', () => {
     );
     expect(screen.getByText('Series B locked')).toBeInTheDocument();
   });
+
+  it('renders tags when messages array is provided', () => {
+    const fullMessages = [
+      { id: 1, category: 'Decide', channel: 'slack', flagged: true, flag_severity: 'High' }
+    ];
+
+    render(
+      <Briefing
+        briefing={briefing}
+        messages={fullMessages}
+        loading={false}
+        onJumpToTriage={() => {}}
+        onOpenMessage={() => {}}
+      />,
+    );
+
+    expect(screen.getByText(/Decide/i)).toBeInTheDocument();
+    expect(screen.getByText(/High/i)).toBeInTheDocument();
+  });
 });

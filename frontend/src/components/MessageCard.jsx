@@ -1,21 +1,10 @@
 import { Mail, MessageSquare, Phone, Inbox, ShieldAlert, AlertTriangle } from 'lucide-react';
+import { channelTone, categoryPill, departmentColor, formatTime } from '../lib/theme.js';
 
-const channelIcons = {
+export const channelIcons = {
   email: Mail,
   slack: MessageSquare,
   whatsapp: Phone,
-};
-
-const channelTone = {
-  email: 'bg-indigo-50 text-brand-600',
-  slack: 'bg-violet-50 text-violet-600',
-  whatsapp: 'bg-emerald-50 text-emerald-600',
-};
-
-const categoryPill = {
-  Decide: 'bg-amber-50 text-amber-700 border-amber-100',
-  Delegate: 'bg-sky-50 text-sky-700 border-sky-100',
-  Ignore: 'bg-slate-100 text-slate-500 border-slate-200',
 };
 
 function UrgencyMeter({ value }) {
@@ -37,22 +26,6 @@ function UrgencyMeter({ value }) {
       ))}
     </div>
   );
-}
-
-function formatTime(ts) {
-  try {
-    const d = new Date(ts);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  } catch {
-    return '';
-  }
-}
-
-function departmentColor(name) {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  const hue = h % 360;
-  return { background: `hsl(${hue}, 70%, 95%)`, color: `hsl(${hue}, 50%, 30%)` };
 }
 
 export default function MessageCard({ message, selected, onClick }) {

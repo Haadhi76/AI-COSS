@@ -6,9 +6,13 @@ import {
   Sparkles,
   ChevronRight,
   ArrowUpRight,
+  Inbox,
+  ShieldAlert,
 } from 'lucide-react';
 import { BriefingSkeleton } from './SkeletonLoader.jsx';
 import DayWrapped from './DayWrapped.jsx';
+import { channelTone, categoryPill, departmentColor } from '../lib/theme.js';
+import { channelIcons } from './MessageCard.jsx';
 
 const SECTION_TITLES = {
   decisions: 'Top Decisions Needed',
@@ -22,6 +26,28 @@ function itemsByTitle(briefing, title) {
   return section?.items ?? [];
 }
 
+function reroutedSections(briefing, messages) {
+  const sections = briefing.sections ?? [];
+  const byId = new Map((messages ?? []).map(m => [m.id, m]));
+  const buckets = new Map(sections.map(s => [s.title, []]));
+
+  for (const section of sections) {
+    for (const item of section.items ?? []) {
+      const meta = byId.get(item.message_id);
+      if (!meta) { buckets.get(section.title).push(item); continue; }
+      if (meta.category === 'Ignore') continue;
+      if (meta.overridden) {
+        if (meta.category === 'Decide') buckets.get('Top Decisions Needed')?.push(item);
+        else if (meta.category === 'Delegate') buckets.get('Delegated Actions')?.push(item);
+        else buckets.get(section.title)?.push(item);
+      } else {
+        buckets.get(section.title).push(item);
+      }
+    }
+  }
+  return sections.map(s => ({ ...s, items: buckets.get(s.title) ?? [] }));
+}
+
 function formatGeneratedAt(ts) {
   if (!ts) return '';
   try {
@@ -32,7 +58,7 @@ function formatGeneratedAt(ts) {
   }
 }
 
-function Section({ icon: Icon, title, accent, items, completedSet, onOpen, onToggle, checkable }) {
+function Section({ icon: Icon, title, accent, items, messages, completedSet, onOpen, onToggle, checkable }) {
   const pending = checkable ? items.filter(i => !completedSet.has(i.message_id)) : items;
   const completed = checkable ? items.filter(i => completedSet.has(i.message_id)) : [];
 
@@ -52,6 +78,7 @@ function Section({ icon: Icon, title, accent, items, completedSet, onOpen, onTog
           <Row
             key={`p-${item.message_id}`}
             item={item}
+            messageMeta={messages?.find(m => m.id === item.message_id)}
             onOpen={onOpen}
             onToggle={onToggle}
             checked={false}
@@ -67,6 +94,7 @@ function Section({ icon: Icon, title, accent, items, completedSet, onOpen, onTog
           <Row
             key={`d-${item.message_id}`}
             item={item}
+            messageMeta={messages?.find(m => m.id === item.message_id)}
             onOpen={onOpen}
             onToggle={onToggle}
             checked={true}
@@ -78,7 +106,10 @@ function Section({ icon: Icon, title, accent, items, completedSet, onOpen, onTog
   );
 }
 
-function Row({ item, onOpen, onToggle, checked, checkable }) {
+function Row({ item, messageMeta, onOpen, onToggle, checked, checkable }) {
+  const ChannelIcon = messageMeta ? (channelIcons[messageMeta.channel] ?? Inbox) : null;
+  const tone = messageMeta ? (channelTone[messageMeta.channel] ?? 'bg-slate-100 text-slate-500') : '';
+
   return (
     <li
       className={`group flex items-start gap-3 px-6 py-3.5 transition-colors duration-200 ${
@@ -112,6 +143,35 @@ function Row({ item, onOpen, onToggle, checked, checkable }) {
         >
           {item.action}
         </p>
+        
+        {messageMeta && (
+          <div className="flex items-center gap-2 mt-2">
+            <span className={`p-1 rounded-md ${tone}`}>
+              {messageMeta.flagged ? <ShieldAlert size={12} /> : <ChannelIcon size={12} />}
+            </span>
+            <span
+              className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md border uppercase tracking-wide ${
+                categoryPill[messageMeta.category] ?? categoryPill.Ignore
+              }`}
+            >
+              {messageMeta.category}
+            </span>
+            {messageMeta.department && (
+              <span
+                className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wide"
+                style={departmentColor(messageMeta.department)}
+              >
+                {messageMeta.department}
+              </span>
+            )}
+            {messageMeta.flagged && (
+              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-red-600 ml-auto">
+                <AlertTriangle size={12} />
+                {messageMeta.flag_severity ?? 'Critical'}
+              </span>
+            )}
+          </div>
+        )}
       </button>
       <ArrowUpRight
         size={16}
@@ -123,6 +183,7 @@ function Row({ item, onOpen, onToggle, checked, checkable }) {
 
 export default function Briefing({
   briefing,
+  messages,
   loading,
   onJumpToTriage,
   onOpenMessage,
@@ -133,10 +194,11 @@ export default function Briefing({
 }) {
   if (loading || !briefing) return <BriefingSkeleton />;
 
-  const decisions = itemsByTitle(briefing, SECTION_TITLES.decisions);
-  const delegated = itemsByTitle(briefing, SECTION_TITLES.delegated);
-  const watch = itemsByTitle(briefing, SECTION_TITLES.watch);
-  const quickWins = itemsByTitle(briefing, SECTION_TITLES.quickWins);
+  const effective = { ...briefing, sections: reroutedSections(briefing, messages) };
+  const decisions = itemsByTitle(effective, SECTION_TITLES.decisions);
+  const delegated = itemsByTitle(effective, SECTION_TITLES.delegated);
+  const watch = itemsByTitle(effective, SECTION_TITLES.watch);
+  const quickWins = itemsByTitle(effective, SECTION_TITLES.quickWins);
   const stamp = formatGeneratedAt(briefing.generated_at);
   const completedSet = new Set(completedIds);
 
@@ -190,6 +252,7 @@ export default function Briefing({
         title={SECTION_TITLES.decisions}
         accent="bg-amber-50 text-amber-700"
         items={decisions}
+        messages={messages}
         completedSet={completedSet}
         onOpen={onOpenMessage}
         onToggle={onToggle}
@@ -201,6 +264,7 @@ export default function Briefing({
         title={SECTION_TITLES.delegated}
         accent="bg-sky-50 text-sky-700"
         items={delegated}
+        messages={messages}
         completedSet={completedSet}
         onOpen={onOpenMessage}
         onToggle={onToggle}
@@ -213,6 +277,7 @@ export default function Briefing({
           title={SECTION_TITLES.watch}
           accent="bg-slate-100 text-slate-700"
           items={watch}
+          messages={messages}
           completedSet={completedSet}
           onOpen={onOpenMessage}
           onToggle={onToggle}
@@ -224,6 +289,7 @@ export default function Briefing({
           title={SECTION_TITLES.quickWins}
           accent="bg-emerald-50 text-emerald-700"
           items={quickWins}
+          messages={messages}
           completedSet={completedSet}
           onOpen={onOpenMessage}
           onToggle={onToggle}

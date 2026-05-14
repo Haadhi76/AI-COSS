@@ -43,24 +43,29 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [today, setToday] = useState(null);
   const [error, setError] = useState(null);
+  const [regenerating, setRegenerating] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async ({ force = false } = {}) => {
+    if (force) setRegenerating(true);
+    else setLoading(true);
     setError(null);
     try {
-      const row = await getTodayBriefing(messages);
+      const row = await getTodayBriefing(messages, { force });
       setToday(row);
     } catch (e) {
       setError(e?.message ?? 'Unknown error');
-      setToday(null);
+      if (!force) setToday(null);
     } finally {
       setLoading(false);
+      setRegenerating(false);
     }
   }, []);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  const regenerate = useCallback(() => load({ force: true }), [load]);
 
   const triage = today?.triage ?? [];
   const overrides = today?.overrides ?? {};
@@ -145,12 +150,23 @@ export default function App() {
     }
   };
 
+  const handleApprove = (messageId) => {
+    if (!completedIds.includes(messageId)) {
+      toggleCompletion(messageId);
+    }
+  };
+
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-900">
       <Sidebar active={active} onChange={setActive} counts={counts} />
 
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <StatBar counts={counts} title={TITLES[active]} />
+        <StatBar
+          counts={counts}
+          title={TITLES[active]}
+          onRegenerate={active === 'briefing' ? regenerate : undefined}
+          regenerating={regenerating}
+        />
 
         <div className="flex-1 overflow-y-auto scrollbar-thin">
           <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-6xl mx-auto w-full space-y-6">
@@ -159,6 +175,7 @@ export default function App() {
             {active === 'briefing' && (
               <Briefing
                 briefing={briefing}
+                messages={enriched}
                 loading={loading}
                 onJumpToTriage={() => setActive('triage')}
                 onOpenMessage={openMessage}
@@ -191,6 +208,7 @@ export default function App() {
         message={selected}
         onClose={() => setSelected(null)}
         onOverride={applyOverride}
+        onApprove={handleApprove}
       />
     </div>
   );

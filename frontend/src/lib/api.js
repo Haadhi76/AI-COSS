@@ -38,8 +38,9 @@ export async function generateBriefing(messages, triage) {
   return postJson('/api/briefing', { messages, triage });
 }
 
-export async function getTodayBriefing(messages) {
-  return postJson('/api/briefing/today', { messages });
+export async function getTodayBriefing(messages, { force = false } = {}) {
+  const path = force ? '/api/briefing/today?force=true' : '/api/briefing/today';
+  return postJson(path, { messages });
 }
 
 export async function setCompletion(messageId, completed) {
