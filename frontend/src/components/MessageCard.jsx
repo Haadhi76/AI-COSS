@@ -90,11 +90,18 @@ export default function MessageCard({ message, selected, onClick }) {
           </div>
         </div>
         <span
-          className={`shrink-0 text-[10px] font-bold px-2 py-1 rounded-md border uppercase tracking-wide ${
+          className={`relative shrink-0 text-[10px] font-bold px-2 py-1 rounded-md border uppercase tracking-wide ${
             categoryPill[message.category] ?? categoryPill.Ignore
           }`}
         >
           {message.category}
+          {message.overridden && (
+            <span
+              data-testid="overridden-dot"
+              aria-label="Category overridden"
+              className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-brand-500"
+            />
+          )}
         </span>
         {message.department && (
           <span

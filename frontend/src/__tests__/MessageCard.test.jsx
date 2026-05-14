@@ -31,3 +31,20 @@ describe('MessageCard department capsule', () => {
     expect(first).toBe(second);
   });
 });
+
+describe('MessageCard overridden indicator', () => {
+  it('shows a data-overridden flag when the message has been recategorized', () => {
+    render(
+      <MessageCard
+        message={{ ...base, overridden: true, category: 'Ignore' }}
+        onClick={() => {}}
+      />,
+    );
+    expect(screen.getByTestId('overridden-dot')).toBeInTheDocument();
+  });
+
+  it('does not show the dot for messages that retain the AI category', () => {
+    render(<MessageCard message={base} onClick={() => {}} />);
+    expect(screen.queryByTestId('overridden-dot')).toBeNull();
+  });
+});
