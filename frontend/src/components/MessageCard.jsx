@@ -48,6 +48,13 @@ function formatTime(ts) {
   }
 }
 
+function departmentColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  const hue = h % 360;
+  return { background: `hsl(${hue}, 70%, 95%)`, color: `hsl(${hue}, 50%, 30%)` };
+}
+
 export default function MessageCard({ message, selected, onClick }) {
   const Icon = channelIcons[message.channel] ?? Inbox;
   const tone = channelTone[message.channel] ?? 'bg-slate-100 text-slate-500';
@@ -89,6 +96,14 @@ export default function MessageCard({ message, selected, onClick }) {
         >
           {message.category}
         </span>
+        {message.department && (
+          <span
+            className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide"
+            style={departmentColor(message.department)}
+          >
+            {message.department}
+          </span>
+        )}
       </div>
 
       <p className="text-sm text-slate-600 leading-relaxed line-clamp-2">
