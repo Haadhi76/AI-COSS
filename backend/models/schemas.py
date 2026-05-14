@@ -92,3 +92,8 @@ class TodayBriefingResponse(BaseModel):
 class CompletionRequest(BaseModel):
     message_id: int
     completed: bool
+
+
+class OverrideRequest(BaseModel):
+    message_id: int
+    category: Optional[Category] = None

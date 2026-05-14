@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException
 from db import get_today, update_today_payload, upsert_today, utc_today_str
 from models.schemas import (
     CompletionRequest,
+    OverrideRequest,
     TodayBriefingRequest,
     TodayBriefingResponse,
 )
@@ -64,6 +65,26 @@ def patch_completion(req: CompletionRequest) -> TodayBriefingResponse:
         if checkable and checkable.issubset(completed) and not payload.get("day_summary"):
             summary = run_day_summary(payload)
             payload["day_summary"] = summary.model_dump()
+        return payload
+
+    updated = update_today_payload(today, mutate)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="No briefing for today yet")
+    return TodayBriefingResponse.model_validate(updated)
+
+
+@router.patch("/api/briefing/today/override", response_model=TodayBriefingResponse)
+def patch_override(req: OverrideRequest) -> TodayBriefingResponse:
+    today = utc_today_str()
+
+    def mutate(payload: dict) -> dict:
+        overrides = dict(payload.get("overrides", {}))
+        key = str(req.message_id)
+        if req.category is None:
+            overrides.pop(key, None)
+        else:
+            overrides[key] = req.category
+        payload["overrides"] = overrides
         return payload
 
     updated = update_today_payload(today, mutate)
