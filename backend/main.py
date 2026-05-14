@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 
 load_dotenv()
 
-from routers import briefing, flags, history, triage  # noqa: E402
+from routers import briefing, flags, history, today, triage  # noqa: E402
 from services.claude_service import MODEL  # noqa: E402
 
 logger = logging.getLogger("innateai.backend")
@@ -24,7 +24,7 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
     ],
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
     allow_headers=["Content-Type"],
 )
 
@@ -32,6 +32,7 @@ app.include_router(triage.router)
 app.include_router(briefing.router)
 app.include_router(flags.router)
 app.include_router(history.router)
+app.include_router(today.router)
 
 
 @app.get("/health")

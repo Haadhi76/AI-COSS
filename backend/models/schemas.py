@@ -27,6 +27,7 @@ class TriageItem(BaseModel):
     urgency: int = Field(ge=1, le=5)
     flagged: bool
     flag_severity: Optional[FlagSeverity] = None
+    department: str = "Unknown"
 
 
 class TriageRequest(BaseModel):
@@ -66,3 +67,33 @@ class FlagItem(BaseModel):
 
 class FlagsResponse(BaseModel):
     flags: List[FlagItem]
+
+
+class DaySummary(BaseModel):
+    bullets: List[str]
+
+
+class TodayBriefingRequest(BaseModel):
+    messages: List[Message]
+
+
+class TodayBriefingResponse(BaseModel):
+    id: int
+    briefing_date: str
+    sections: List[BriefingSection]
+    generated_at: datetime
+    messages: List[Message]
+    triage: List[TriageItem]
+    completed_ids: List[int]
+    overrides: dict[str, Category]
+    day_summary: Optional[DaySummary] = None
+
+
+class CompletionRequest(BaseModel):
+    message_id: int
+    completed: bool
+
+
+class OverrideRequest(BaseModel):
+    message_id: int
+    category: Optional[Category] = None

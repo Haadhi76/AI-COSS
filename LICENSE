@@ -1,0 +1,71 @@
+Source Available Non-Commercial License
+Copyright (c) 2026 Haadhi Irfan. All rights reserved.
+
+TERMS AND CONDITIONS
+
+1. DEFINITIONS
+
+   "Software" means the InnateAI source code, documentation, and all associated
+   files in this repository.
+
+   "Commercial Use" means any use of the Software, in whole or in part, that is
+   intended for or directed toward commercial advantage or monetary compensation,
+   including but not limited to: integrating the Software into a paid product or
+   service, using the Software in a business context to generate revenue, or
+   sublicensing the Software to third parties.
+
+   "Non-Commercial Use" means personal, educational, research, or open-source
+   purposes where no commercial advantage or monetary compensation is sought or
+   received.
+
+2. GRANT OF RIGHTS
+
+   Subject to the terms of this License, the copyright holder grants you a
+   limited, non-exclusive, non-transferable, royalty-free license to:
+
+   a. View and study the source code for personal or educational purposes.
+   b. Fork and modify the Software for Non-Commercial Use only.
+   c. Run the Software locally for personal, non-commercial purposes.
+
+3. RESTRICTIONS
+
+   You may NOT, without prior written permission from the copyright holder:
+
+   a. Use the Software or any derivative work for Commercial Use.
+   b. Distribute, publish, or sublicense the Software or any derivative work.
+   c. Use the Software as part of any SaaS, hosted service, or API offered to
+      third parties, whether or not a fee is charged.
+   d. Remove or alter any copyright, trademark, or attribution notices.
+   e. Represent that you are the original author of the Software.
+
+4. ATTRIBUTION
+
+   Any permitted use must retain this license notice and give clear attribution
+   to the original author: Haadhi Irfan (https://github.com/haadhi-irfan).
+
+5. COMMERCIAL LICENSING
+
+   If you wish to use the Software for Commercial Use, please contact
+   haadhi.irfan@gmail.com to discuss a commercial license.
+
+6. NO WARRANTY
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. IN NO EVENT SHALL
+   THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF,
+   OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+
+7. TERMINATION
+
+   This License is effective until terminated. Your rights under this License
+   will terminate automatically and without notice if you fail to comply with
+   any of its terms. Upon termination, you must destroy all copies of the
+   Software in your possession.
+
+8. GOVERNING LAW
+
+   This License shall be governed by and construed in accordance with applicable
+   law, without regard to conflict of law principles.

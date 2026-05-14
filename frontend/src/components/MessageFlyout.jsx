@@ -30,7 +30,7 @@ const categoryTone = {
   Ignore: 'bg-slate-100 text-slate-500 border-slate-200',
 };
 
-export default function MessageFlyout({ message, onClose }) {
+export default function MessageFlyout({ message, onClose, onOverride = () => {}, onApprove = () => {} }) {
   const [draft, setDraft] = useState('');
   const [sent, setSent] = useState(false);
 
@@ -54,6 +54,7 @@ export default function MessageFlyout({ message, onClose }) {
   const fromAddress = message.from.match(/<([^>]+)>/)?.[1] ?? message.channel_name ?? '';
 
   const handleApprove = () => {
+    onApprove(message.id);
     setSent(true);
     setTimeout(onClose, 900);
   };
@@ -135,6 +136,36 @@ export default function MessageFlyout({ message, onClose }) {
               </p>
             </div>
             <p className="text-sm text-slate-800 leading-relaxed">{message.reasoning}</p>
+          </section>
+
+          {/* Category override */}
+          <section>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+              Category
+            </p>
+            <div className="inline-flex p-1 bg-slate-100 rounded-xl">
+              {['Decide', 'Delegate', 'Ignore'].map(cat => {
+                const isActive = message.category === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => onOverride(message.id, isActive && message.overridden ? null : cat)}
+                    className={`cursor-pointer px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      isActive
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
+            {message.overridden && (
+              <p className="text-[11px] text-slate-400 mt-1.5">
+                Override active — click the highlighted button to revert to the AI's suggestion.
+              </p>
+            )}
           </section>
 
           {/* Editable draft */}

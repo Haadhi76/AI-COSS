@@ -7,7 +7,7 @@ import Triage from './components/Triage.jsx';
 import Flags from './components/Flags.jsx';
 import MessageFlyout from './components/MessageFlyout.jsx';
 import { messages } from './lib/messages.js';
-import { triageMessages, generateBriefing } from './lib/claude.js';
+import { getTodayBriefing, setCompletion, setOverride } from './lib/api.js';
 
 const TITLES = {
   briefing: 'Morning Briefing',
@@ -41,24 +41,23 @@ export default function App() {
   const [active, setActive] = useState('briefing');
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [triage, setTriage] = useState([]);
-  const [briefing, setBriefing] = useState(null);
+  const [today, setToday] = useState(null);
   const [error, setError] = useState(null);
+  const [regenerating, setRegenerating] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async ({ force = false } = {}) => {
+    if (force) setRegenerating(true);
+    else setLoading(true);
     setError(null);
     try {
-      const triageResult = await triageMessages(messages);
-      setTriage(triageResult);
-      const briefingResult = await generateBriefing(messages, triageResult);
-      setBriefing(briefingResult);
+      const row = await getTodayBriefing(messages, { force });
+      setToday(row);
     } catch (e) {
       setError(e?.message ?? 'Unknown error');
-      setTriage([]);
-      setBriefing(null);
+      if (!force) setToday(null);
     } finally {
       setLoading(false);
+      setRegenerating(false);
     }
   }, []);
 
@@ -66,24 +65,39 @@ export default function App() {
     load();
   }, [load]);
 
-  // Stitch raw messages with their triage verdict for downstream views.
+  const regenerate = useCallback(() => load({ force: true }), [load]);
+
+  const triage = today?.triage ?? [];
+  const overrides = today?.overrides ?? {};
+  const completedIds = today?.completed_ids ?? [];
+  const daySummary = today?.day_summary ?? null;
+  const sourceMessages = today?.messages ?? messages;
+  const briefing = today
+    ? { sections: today.sections, generated_at: today.generated_at }
+    : null;
+
   const enriched = useMemo(() => {
     if (!triage.length) return [];
     const byId = new Map(triage.map(t => [t.id, t]));
-    return messages
-      .map(m => ({ ...m, ...(byId.get(m.id) ?? {}) }))
-      .filter(m => m.category);
-  }, [triage]);
+    return sourceMessages
+      .map(m => {
+        const t = byId.get(m.id);
+        if (!t) return null;
+        const override = overrides[String(m.id)];
+        return { ...m, ...t, category: override ?? t.category, overridden: !!override };
+      })
+      .filter(Boolean);
+  }, [triage, overrides, sourceMessages]);
 
   const counts = useMemo(
     () => ({
-      total: messages.length,
+      total: sourceMessages.length,
       decide: enriched.filter(m => m.category === 'Decide').length,
       delegate: enriched.filter(m => m.category === 'Delegate').length,
       flagged: enriched.filter(m => m.flagged).length,
       ignore: enriched.filter(m => m.category === 'Ignore').length,
     }),
-    [enriched],
+    [enriched, sourceMessages],
   );
 
   const openMessage = id => {
@@ -91,12 +105,68 @@ export default function App() {
     if (m) setSelected(m);
   };
 
+  const toggleCompletion = async messageId => {
+    if (!today) return;
+    const isCurrentlyDone = completedIds.includes(messageId);
+    const snapshot = today;
+    const optimistic = {
+      ...today,
+      completed_ids: isCurrentlyDone
+        ? completedIds.filter(id => id !== messageId)
+        : [...completedIds, messageId],
+    };
+    setToday(optimistic);
+    try {
+      const updated = await setCompletion(messageId, !isCurrentlyDone);
+      setToday(updated);
+    } catch (e) {
+      setToday(snapshot);
+      setError(e?.message ?? 'Failed to update completion');
+    }
+  };
+
+  const applyOverride = async (messageId, category) => {
+    if (!today) return;
+    const snapshot = today;
+    const nextOverrides = { ...overrides };
+    if (category === null) delete nextOverrides[String(messageId)];
+    else nextOverrides[String(messageId)] = category;
+    setToday({ ...today, overrides: nextOverrides });
+    try {
+      const updated = await setOverride(messageId, category);
+      setToday(updated);
+      const t = (updated.triage ?? []).find(x => x.id === messageId);
+      const override = (updated.overrides ?? {})[String(messageId)];
+      if (t) {
+        setSelected(prev =>
+          prev?.id === messageId
+            ? { ...prev, ...t, category: override ?? t.category, overridden: !!override }
+            : prev,
+        );
+      }
+    } catch (e) {
+      setToday(snapshot);
+      setError(e?.message ?? 'Failed to update category');
+    }
+  };
+
+  const handleApprove = (messageId) => {
+    if (!completedIds.includes(messageId)) {
+      toggleCompletion(messageId);
+    }
+  };
+
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-900">
       <Sidebar active={active} onChange={setActive} counts={counts} />
 
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <StatBar counts={counts} title={TITLES[active]} />
+        <StatBar
+          counts={counts}
+          title={TITLES[active]}
+          onRegenerate={active === 'briefing' ? regenerate : undefined}
+          regenerating={regenerating}
+        />
 
         <div className="flex-1 overflow-y-auto scrollbar-thin">
           <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-6xl mx-auto w-full space-y-6">
@@ -105,10 +175,14 @@ export default function App() {
             {active === 'briefing' && (
               <Briefing
                 briefing={briefing}
+                messages={enriched}
                 loading={loading}
                 onJumpToTriage={() => setActive('triage')}
                 onOpenMessage={openMessage}
                 noiseCount={counts.ignore}
+                completedIds={completedIds}
+                daySummary={daySummary}
+                onToggle={toggleCompletion}
               />
             )}
             {active === 'triage' && (
@@ -130,7 +204,12 @@ export default function App() {
         </div>
       </main>
 
-      <MessageFlyout message={selected} onClose={() => setSelected(null)} />
+      <MessageFlyout
+        message={selected}
+        onClose={() => setSelected(null)}
+        onOverride={applyOverride}
+        onApprove={handleApprove}
+      />
     </div>
   );
 }

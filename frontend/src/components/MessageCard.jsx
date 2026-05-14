@@ -1,21 +1,10 @@
 import { Mail, MessageSquare, Phone, Inbox, ShieldAlert, AlertTriangle } from 'lucide-react';
+import { channelTone, categoryPill, departmentColor, formatTime } from '../lib/theme.js';
 
-const channelIcons = {
+export const channelIcons = {
   email: Mail,
   slack: MessageSquare,
   whatsapp: Phone,
-};
-
-const channelTone = {
-  email: 'bg-indigo-50 text-brand-600',
-  slack: 'bg-violet-50 text-violet-600',
-  whatsapp: 'bg-emerald-50 text-emerald-600',
-};
-
-const categoryPill = {
-  Decide: 'bg-amber-50 text-amber-700 border-amber-100',
-  Delegate: 'bg-sky-50 text-sky-700 border-sky-100',
-  Ignore: 'bg-slate-100 text-slate-500 border-slate-200',
 };
 
 function UrgencyMeter({ value }) {
@@ -37,15 +26,6 @@ function UrgencyMeter({ value }) {
       ))}
     </div>
   );
-}
-
-function formatTime(ts) {
-  try {
-    const d = new Date(ts);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  } catch {
-    return '';
-  }
 }
 
 export default function MessageCard({ message, selected, onClick }) {
@@ -83,12 +63,27 @@ export default function MessageCard({ message, selected, onClick }) {
           </div>
         </div>
         <span
-          className={`shrink-0 text-[10px] font-bold px-2 py-1 rounded-md border uppercase tracking-wide ${
+          className={`relative shrink-0 text-[10px] font-bold px-2 py-1 rounded-md border uppercase tracking-wide ${
             categoryPill[message.category] ?? categoryPill.Ignore
           }`}
         >
           {message.category}
+          {message.overridden && (
+            <span
+              data-testid="overridden-dot"
+              aria-label="Category overridden"
+              className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-brand-500"
+            />
+          )}
         </span>
+        {message.department && (
+          <span
+            className="shrink-0 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide"
+            style={departmentColor(message.department)}
+          >
+            {message.department}
+          </span>
+        )}
       </div>
 
       <p className="text-sm text-slate-600 leading-relaxed line-clamp-2">

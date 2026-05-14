@@ -77,3 +77,41 @@ def test_e2e_records_three_separate_claude_calls(client, mock_claude, isolated_d
     # Two LLM round-trips: one for triage, one for briefing. Flags is derived
     # locally and must never reach the LLM.
     assert len(mock_claude.calls) == 2
+
+
+def test_e2e_today_completion_and_override(client, monkeypatch, tmp_path):
+    """Full loop: create today's row, override a category, complete the day."""
+    import importlib
+    monkeypatch.setenv("INNATEAI_DB_PATH", str(tmp_path / "e2e.db"))
+    import db
+    importlib.reload(db)
+
+    from services import claude_service
+    from tests.fixtures import (
+        SAMPLE_MESSAGES,
+        briefing_response_json,
+        triage_response_json,
+    )
+
+    responses = [
+        triage_response_json(),
+        briefing_response_json(),
+        '{"bullets":["wrapped"]}',
+    ]
+    monkeypatch.setattr(claude_service, "_call_claude", lambda s, u, m: responses.pop(0))
+
+    today = client.post("/api/briefing/today", json={"messages": SAMPLE_MESSAGES}).json()
+    assert today["overrides"] == {}
+
+    overridden = client.patch(
+        "/api/briefing/today/override",
+        json={"message_id": 2, "category": "Decide"},
+    ).json()
+    assert overridden["overrides"] == {"2": "Decide"}
+
+    completed = client.patch(
+        "/api/briefing/today/completion",
+        json={"message_id": 1, "completed": True},
+    ).json()
+    assert completed["completed_ids"] == [1]
+    assert completed["day_summary"] == {"bullets": ["wrapped"]}

@@ -1,4 +1,4 @@
-import { Inbox, AlertTriangle, UserCheck, Flag } from 'lucide-react';
+import { Inbox, AlertTriangle, UserCheck, Flag, RotateCw } from 'lucide-react';
 
 function Stat({ icon: Icon, label, value, tone = 'slate' }) {
   const tones = {
@@ -23,17 +23,32 @@ function Stat({ icon: Icon, label, value, tone = 'slate' }) {
   );
 }
 
-export default function StatBar({ counts, title }) {
+export default function StatBar({ counts, title, onRegenerate, regenerating = false }) {
   return (
     <header className="bg-white border-b border-slate-200 shrink-0">
       <div className="flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 py-3">
-        <div className="min-w-0">
-          <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight truncate pl-10 md:pl-0">
-            {title}
-          </h1>
-          <p className="hidden sm:block text-xs text-slate-500 mt-0.5">
-            Wednesday, 18 March 2026 · 13:02 GMT
-          </p>
+        <div className="min-w-0 flex items-center gap-3">
+          <div className="min-w-0">
+            <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight truncate pl-10 md:pl-0">
+              {title}
+            </h1>
+            <p className="hidden sm:block text-xs text-slate-500 mt-0.5">
+              Wednesday, 18 March 2026 · 13:02 GMT
+            </p>
+          </div>
+          {onRegenerate && (
+            <button
+              type="button"
+              onClick={onRegenerate}
+              disabled={regenerating}
+              aria-label="Regenerate briefing"
+              title="Regenerate briefing"
+              className="cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-wait text-slate-700 text-xs font-semibold rounded-lg transition-colors"
+            >
+              <RotateCw size={12} className={regenerating ? 'animate-spin' : ''} />
+              {regenerating ? 'Regenerating…' : 'Regenerate'}
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-thin">
           <Stat icon={Inbox} label="Total" value={counts.total} tone="slate" />

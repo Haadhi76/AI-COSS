@@ -14,7 +14,6 @@ DELIVERABLES.md
 
 # Backend / Python
 backend/.env
-backend/data/
 __pycache__/
 *.py[cod]
 *$py.class
@@ -33,3 +32,10 @@ env/
 
 # Superpowers brainstorm artifacts
 .superpowers/
+docs/superpowers
+
+planning/
+
+test-driven-development/
+
+.claude/
