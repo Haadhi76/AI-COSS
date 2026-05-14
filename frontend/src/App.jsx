@@ -7,7 +7,7 @@ import Triage from './components/Triage.jsx';
 import Flags from './components/Flags.jsx';
 import MessageFlyout from './components/MessageFlyout.jsx';
 import { messages } from './lib/messages.js';
-import { triageMessages, generateBriefing } from './lib/claude.js';
+import { triageMessages, generateBriefing } from './lib/api.js';
 
 const TITLES = {
   briefing: 'Morning Briefing',

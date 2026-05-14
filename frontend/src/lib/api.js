@@ -1,7 +1,7 @@
 // Thin client to the FastAPI backend. The Anthropic API key never reaches
 // the browser — it lives in the backend's .env file.
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000';
 
 async function postJson(path, body) {
   const res = await fetch(`${API_BASE_URL}${path}`, {
@@ -16,9 +16,9 @@ async function postJson(path, body) {
   return res.json();
 }
 
-async function getJsonWithBody(path, body) {
+async function patchJson(path, body) {
   const res = await fetch(`${API_BASE_URL}${path}`, {
-    method: 'GET',
+    method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
@@ -38,7 +38,20 @@ export async function generateBriefing(messages, triage) {
   return postJson('/api/briefing', { messages, triage });
 }
 
-export async function getFlags(triage) {
-  const data = await getJsonWithBody('/api/flags', { triage });
-  return data.flags;
+export async function getTodayBriefing(messages) {
+  return postJson('/api/briefing/today', { messages });
+}
+
+export async function setCompletion(messageId, completed) {
+  return patchJson('/api/briefing/today/completion', {
+    message_id: messageId,
+    completed,
+  });
+}
+
+export async function setOverride(messageId, category) {
+  return patchJson('/api/briefing/today/override', {
+    message_id: messageId,
+    category,
+  });
 }
