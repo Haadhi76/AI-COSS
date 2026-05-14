@@ -14,7 +14,6 @@ DELIVERABLES.md
 
 # Backend / Python
 backend/.env
-backend/
 __pycache__/
 *.py[cod]
 *$py.class
