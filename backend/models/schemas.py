@@ -71,3 +71,19 @@ class FlagsResponse(BaseModel):
 
 class DaySummary(BaseModel):
     bullets: List[str]
+
+
+class TodayBriefingRequest(BaseModel):
+    messages: List[Message]
+
+
+class TodayBriefingResponse(BaseModel):
+    id: int
+    briefing_date: str
+    sections: List[BriefingSection]
+    generated_at: datetime
+    messages: List[Message]
+    triage: List[TriageItem]
+    completed_ids: List[int]
+    overrides: dict[str, Category]
+    day_summary: Optional[DaySummary] = None

@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 
 load_dotenv()
 
-from routers import briefing, flags, history, triage  # noqa: E402
+from routers import briefing, flags, history, today, triage  # noqa: E402
 from services.claude_service import MODEL  # noqa: E402
 
 logger = logging.getLogger("innateai.backend")
@@ -32,6 +32,7 @@ app.include_router(triage.router)
 app.include_router(briefing.router)
 app.include_router(flags.router)
 app.include_router(history.router)
+app.include_router(today.router)
 
 
 @app.get("/health")
