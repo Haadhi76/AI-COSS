@@ -130,10 +130,14 @@ export default function App() {
     try {
       const updated = await setOverride(messageId, category);
       setToday(updated);
-      if (selected?.id === messageId) {
-        const t = (updated.triage ?? []).find(x => x.id === messageId);
-        const override = (updated.overrides ?? {})[String(messageId)];
-        if (t) setSelected({ ...selected, ...t, category: override ?? t.category, overridden: !!override });
+      const t = (updated.triage ?? []).find(x => x.id === messageId);
+      const override = (updated.overrides ?? {})[String(messageId)];
+      if (t) {
+        setSelected(prev =>
+          prev?.id === messageId
+            ? { ...prev, ...t, category: override ?? t.category, overridden: !!override }
+            : prev,
+        );
       }
     } catch (e) {
       setToday(snapshot);
