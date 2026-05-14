@@ -6,6 +6,7 @@ frontend/dist
 frontend/.env
 frontend/.env.local
 frontend/*.log
+frontend/.claude/
 
 frontend/CLAUDE_frontend.md
 CLAUDE.md
@@ -29,3 +30,6 @@ env/
 .DS_Store
 .vscode/
 .idea/
+
+# Superpowers brainstorm artifacts
+.superpowers/
