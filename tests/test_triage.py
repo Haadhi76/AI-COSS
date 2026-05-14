@@ -13,6 +13,8 @@ def test_triage_happy_path(client, mock_claude):
     assert body["triage"][0]["id"] == 1
     assert body["triage"][0]["category"] == "Decide"
     assert body["triage"][0]["flag_severity"] is None
+    assert body["triage"][0]["department"] == "Investors"
+    assert body["triage"][1]["department"] == "Engineering"
 
 
 def test_triage_strips_markdown_fences(client, mock_claude):

@@ -27,6 +27,7 @@ class TriageItem(BaseModel):
     urgency: int = Field(ge=1, le=5)
     flagged: bool
     flag_severity: Optional[FlagSeverity] = None
+    department: str = "Unknown"
 
 
 class TriageRequest(BaseModel):

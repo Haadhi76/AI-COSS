@@ -29,6 +29,7 @@ SAMPLE_TRIAGE_RESPONSE = [
         "urgency": 4,
         "flagged": False,
         "flag_severity": None,
+        "department": "Investors",
     },
     {
         "id": 2,
@@ -38,6 +39,7 @@ SAMPLE_TRIAGE_RESPONSE = [
         "urgency": 1,
         "flagged": False,
         "flag_severity": None,
+        "department": "Engineering",
     },
 ]
 
