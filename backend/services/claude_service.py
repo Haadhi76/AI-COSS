@@ -13,6 +13,7 @@ from models.schemas import (
     Message,
     TriageItem,
 )
+from services.memory_service import load_memory
 
 MODEL = "claude-sonnet-4-6"
 TRIAGE_MAX_TOKENS = 8000
@@ -69,20 +70,30 @@ def _call_claude(system: str, user: str, max_tokens: int) -> str:
     return "".join(parts)
 
 
-TRIAGE_SYSTEM = """You are an AI Chief of Staff triaging incoming messages for a CEO.
+TRIAGE_SYSTEM_TEMPLATE = """You are an AI Chief of Staff triaging incoming messages for a CEO.
 
-For each message, decide:
+{company_directory_block}For each message, decide:
 - category: "Decide" (CEO must personally choose), "Delegate" (a direct report can handle), or "Ignore" (noise, FYI, superseded, or personal).
 - urgency: integer 1-5 (5 = critical, requires action within the hour).
 - flagged: true if this is a security risk, a production incident, or a deal-breaking decision; false otherwise.
 - flag_severity: "Critical" or "High" when flagged is true; null when flagged is false.
 - reasoning: 1-3 sentences explaining the categorization. Be specific. Reference other messages by id if relevant.
 - draft: a short proposed response the CEO can edit and send. For "Ignore" use "No response needed." For personal messages use "Personal — handle directly."
+- department: a short label for the sender's organisation/team based on the company directory above (e.g. "Engineering", "Investors", "Executive", "Personal", "External"). If you cannot tell, use "Unknown".
 
 Return a JSON array. Each item must match this schema exactly:
-{ "id": number, "category": "Ignore"|"Delegate"|"Decide", "reasoning": string, "draft": string, "urgency": 1-5, "flagged": boolean, "flag_severity": "Critical"|"High"|null }
+{{ "id": number, "category": "Ignore"|"Delegate"|"Decide", "reasoning": string, "draft": string, "urgency": 1-5, "flagged": boolean, "flag_severity": "Critical"|"High"|null, "department": string }}
 
 Return ONLY valid JSON. No markdown, no prose, no backticks."""
+
+
+def _triage_system() -> str:
+    memory = load_memory().strip()
+    if memory:
+        block = f"<company_directory>\n{memory}\n</company_directory>\n\nUse the directory above to assign 'department' for each message.\n\n"
+    else:
+        block = ""
+    return TRIAGE_SYSTEM_TEMPLATE.format(company_directory_block=block)
 
 
 BRIEFING_SYSTEM = """You are an AI Chief of Staff producing a structured daily briefing for a CEO.
@@ -116,7 +127,7 @@ Return ONLY valid JSON. No markdown, no prose, no backticks."""
 def run_triage(messages: List[Message]) -> List[TriageItem]:
     payload = [m.model_dump(by_alias=True) for m in messages]
     user = f"Triage these {len(messages)} messages:\n\n{json.dumps(payload, indent=2)}"
-    raw = _call_claude(TRIAGE_SYSTEM, user, TRIAGE_MAX_TOKENS)
+    raw = _call_claude(_triage_system(), user, TRIAGE_MAX_TOKENS)
     parsed = _parse_json_or_502(raw)
 
     if not isinstance(parsed, list):
