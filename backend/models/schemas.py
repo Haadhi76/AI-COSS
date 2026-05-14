@@ -87,3 +87,8 @@ class TodayBriefingResponse(BaseModel):
     completed_ids: List[int]
     overrides: dict[str, Category]
     day_summary: Optional[DaySummary] = None
+
+
+class CompletionRequest(BaseModel):
+    message_id: int
+    completed: bool

@@ -1,13 +1,25 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
-from db import get_today, upsert_today, utc_today_str
+from db import get_today, update_today_payload, upsert_today, utc_today_str
 from models.schemas import (
+    CompletionRequest,
     TodayBriefingRequest,
     TodayBriefingResponse,
 )
-from services.claude_service import run_briefing, run_triage
+from services.claude_service import run_briefing, run_day_summary, run_triage
 
 router = APIRouter()
+
+CHECKABLE_SECTIONS = {"Top Decisions Needed", "Delegated Actions", "Quick Wins"}
+
+
+def _checkable_ids(payload: dict) -> set[int]:
+    ids: set[int] = set()
+    for section in payload.get("sections", []):
+        if section.get("title") in CHECKABLE_SECTIONS:
+            for item in section.get("items", []):
+                ids.add(int(item["message_id"]))
+    return ids
 
 
 @router.post("/api/briefing/today", response_model=TodayBriefingResponse)
@@ -33,3 +45,28 @@ def post_today(request: TodayBriefingRequest) -> TodayBriefingResponse:
     payload["id"] = row_id
     payload["briefing_date"] = today
     return TodayBriefingResponse.model_validate(payload)
+
+
+@router.patch("/api/briefing/today/completion", response_model=TodayBriefingResponse)
+def patch_completion(req: CompletionRequest) -> TodayBriefingResponse:
+    today = utc_today_str()
+
+    def mutate(payload: dict) -> dict:
+        completed = set(payload.get("completed_ids", []))
+        if req.completed:
+            completed.add(req.message_id)
+        else:
+            completed.discard(req.message_id)
+        payload["completed_ids"] = sorted(completed)
+
+        # If every checkable todo is done, generate the day summary.
+        checkable = _checkable_ids(payload)
+        if checkable and checkable.issubset(completed) and not payload.get("day_summary"):
+            summary = run_day_summary(payload)
+            payload["day_summary"] = summary.model_dump()
+        return payload
+
+    updated = update_today_payload(today, mutate)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="No briefing for today yet")
+    return TodayBriefingResponse.model_validate(updated)
