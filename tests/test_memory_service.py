@@ -41,13 +41,13 @@ def test_mtime_change_invalidates_cache(tmp_path, monkeypatch):
     assert memory_service.load_memory() == "v2"
 
 
-def test_default_memory_md_exists_and_is_non_empty():
+def test_default_memory_md_exists_and_is_non_empty(monkeypatch):
     """The seeded Memory.md committed at the repo root should load."""
     from services import memory_service
 
-    # Clear env override and cache so we hit the real default.
-    import os
-    os.environ.pop("INNATEAI_MEMORY_PATH", None)
+    # Clear env override and cache so we hit the real default. monkeypatch
+    # auto-reverts after the test so global state is not leaked.
+    monkeypatch.delenv("INNATEAI_MEMORY_PATH", raising=False)
     memory_service._cache = None
 
     text = memory_service.load_memory()
