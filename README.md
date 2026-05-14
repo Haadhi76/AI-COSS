@@ -148,7 +148,6 @@ This project is currently an MVP (Minimum Viable Product). Some functionality ma
 - **Authentication**: There is no authentication system; any local client can read or mutate the briefing data.
 - **Database Backend**: Uses SQLite as the persistence layer, which is not suitable for concurrent multi-user production load.
 - **CORS Config**: Setup is currently hardcoded for local development environments (`localhost`).
-- **Triage Reruns**: Triage cannot be re-run on demand without a full refresh if messages change mid-day.
 
 ## Tech Stack
 
