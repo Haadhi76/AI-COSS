@@ -128,6 +128,9 @@ def upsert_today(briefing_date: str, payload: dict[str, Any]) -> int:
             row_id = cur.lastrowid
         conn.commit()
         return row_id
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()
 
@@ -160,6 +163,9 @@ def update_today_payload(
         new_payload["briefing_date"] = briefing_date
         new_payload["generated_at"] = row["generated_at"]
         return new_payload
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()
 
