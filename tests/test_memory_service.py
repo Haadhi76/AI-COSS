@@ -1,5 +1,4 @@
 import os
-import time
 
 import pytest
 
@@ -34,8 +33,9 @@ def test_mtime_change_invalidates_cache(tmp_path, monkeypatch):
 
     assert memory_service.load_memory() == "v1"
 
-    time.sleep(0.05)
     f.write_text("v2", encoding="utf-8")
-    os.utime(f, None)  # bump mtime
+    # Force mtime forward by exactly 1s — OS-independent, no real sleep.
+    new_mtime = f.stat().st_mtime + 1
+    os.utime(f, (f.stat().st_atime, new_mtime))
 
     assert memory_service.load_memory() == "v2"

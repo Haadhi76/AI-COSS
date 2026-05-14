@@ -24,6 +24,8 @@ def load_memory() -> str:
         return ""
 
     mtime = path.stat().st_mtime
+    # Cache hit only on exact match — any inequality (newer OR older, e.g. after
+    # a `git checkout` that rewinds mtime) falls through to re-read the file.
     if _cache and _cache[0] == mtime:
         return _cache[1]
 
