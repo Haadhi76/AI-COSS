@@ -30,7 +30,7 @@ The system today is stateless on read: every page load re-runs `/api/triage` and
 **Schema (additive):**
 
 ```sql
-ALTER TABLE briefings ADD COLUMN briefing_date TEXT;   -- 'YYYY-MM-DD', server-local TZ
+ALTER TABLE briefings ADD COLUMN briefing_date TEXT;   -- 'YYYY-MM-DD', UTC
 CREATE UNIQUE INDEX IF NOT EXISTS idx_briefings_date ON briefings(briefing_date);
 ```
 
@@ -72,15 +72,17 @@ Seed content is derived from the unique senders in `frontend/src/lib/messages.js
 
 ### 4.1 New endpoints
 
-#### `GET /api/briefing/today`
+#### `POST /api/briefing/today`
 
-Primary entry point for the frontend. Behaviour:
+Primary entry point for the frontend. `POST` because it carries the inbox `messages` body; the route is fetch-or-create rather than a pure GET.
 
-1. Look up the row where `briefing_date = <today, server-local>`.
+Behaviour:
+
+1. Look up the row where `briefing_date = <today, UTC date>`. Date is computed server-side as `datetime.now(timezone.utc).date().isoformat()` for consistency across environments.
 2. If present, return its full payload (with `id`, `briefing_date`).
-3. If absent: run triage on `request.messages` (sent in the request body, same shape as `POST /api/triage`), run briefing on the result, persist the new row with `briefing_date` set, return it.
+3. If absent: run triage on `request.messages` (same body shape as `POST /api/triage`), run briefing on the result, persist the new row with `briefing_date` set, return it.
 
-Method note: this is a `POST` in practice because it carries a `messages` body. Path is still `/api/briefing/today` for clarity. Returning the new row from the create-path keeps the contract single-shot.
+Returning the new row from the create-path keeps the contract single-shot.
 
 Response model: `TodayBriefingResponse` = existing `BriefingResponse` + `id: int`, `briefing_date: str`, `messages: List[Message]`, `triage: List[TriageItem]`, `completed_ids: List[int]`, `overrides: Dict[str, Category]`, `day_summary: Optional[DaySummary]`.
 
@@ -129,7 +131,7 @@ SQLite is sufficient for single-user MVP. PATCH handlers acquire a single connec
 
 Rename `frontend/src/lib/claude.js` → `frontend/src/lib/api.js`. Add:
 
-- `getTodayBriefing(messages) → POST /api/briefing/today`
+- `getTodayBriefing(messages)` → `POST /api/briefing/today`
 - `setCompletion(messageId, completed) → PATCH /api/briefing/today/completion`
 - `setOverride(messageId, category | null) → PATCH /api/briefing/today/override`
 
