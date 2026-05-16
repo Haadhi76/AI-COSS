@@ -197,8 +197,8 @@ export default function Briefing({
   const effective = { ...briefing, sections: reroutedSections(briefing, messages) };
   const decisions = itemsByTitle(effective, SECTION_TITLES.decisions);
   const delegated = itemsByTitle(effective, SECTION_TITLES.delegated);
-  const watch = itemsByTitle(effective, SECTION_TITLES.watch);
-  const quickWins = itemsByTitle(effective, SECTION_TITLES.quickWins);
+  const watch = itemsByTitle(briefing, SECTION_TITLES.watch);
+  const quickWins = itemsByTitle(briefing, SECTION_TITLES.quickWins);
   const stamp = formatGeneratedAt(briefing.generated_at);
   const completedSet = new Set(completedIds);
 
